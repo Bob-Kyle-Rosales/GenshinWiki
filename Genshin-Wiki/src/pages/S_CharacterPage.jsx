@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
+import Swal from "sweetalert2";
 import apiConfig from "../config";
 
 const S_CharacterPage = () => {
@@ -29,16 +30,29 @@ const S_CharacterPage = () => {
   }, [id, navigate]);
 
   const handleDelete = async () => {
-    try {
-      const response = await fetch(`${apiConfig.API_URL}/characters/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to delete character");
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to delete this character?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#8A252C",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(`${apiConfig.API_URL}/characters/${id}`, {
+          method: "DELETE",
+        });
+        if (!response.ok) {
+          throw new Error("Failed to delete character");
+        }
+        navigate("/characters");
+      } catch (err) {
+        console.error("Error deleting character:", err);
+        Swal.fire("Error", "There was a problem deleting the character", "error");
       }
-      navigate("/characters");
-    } catch (err) {
-      console.error("Error deleting character:", err);
     }
   };
 
