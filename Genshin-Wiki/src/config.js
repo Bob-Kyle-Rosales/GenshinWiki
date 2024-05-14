@@ -1,8 +1,5 @@
-const apiHost = `localhost`;
-const apiPort = `8000`;
-
 const apiConfig = {
-  API_URL: `http://${apiHost}:${apiPort}`,
+  API_URL: "https://json-server-vercel-three-sigma.vercel.app/api",
 };
 
 export default apiConfig;
