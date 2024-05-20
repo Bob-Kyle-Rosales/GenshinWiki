@@ -5,12 +5,14 @@ import NavBar from "../components/NavBar";
 
 const MainLayout = () => {
   return (
-    <>
+    <div className="flex flex-col h-screen">
       <NavBar />
       <DataProvider>
-        <Outlet />
+        <div className="flex-grow overflow-auto">
+          <Outlet />
+        </div>
       </DataProvider>
-    </>
+    </div>
   );
 };
 
