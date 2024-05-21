@@ -32,7 +32,7 @@ const HomePage = () => {
           <span className="text-2xl sm:text-xl">Characters</span>
           <div className="border border-yellow-500 px-8 pb-8 pt-4">
             <div className="flex justify-end">
-              <button className="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded">
+              <button className="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded my-4">
                 <NavLink to="/characters">View more</NavLink>
               </button>
             </div>
@@ -46,7 +46,7 @@ const HomePage = () => {
           <span className="text-2xl sm:text-xl">Weapons</span>
           <div className="border border-yellow-500 px-8 pb-8 pt-4">
             <div className="flex justify-end">
-              <button className="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded">
+              <button className="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded my-4">
                 <NavLink to="/weapons">View more</NavLink>
               </button>
             </div>
@@ -58,7 +58,7 @@ const HomePage = () => {
           <span className="text-2xl sm:text-xl">Artifacts</span>
           <div className="border border-yellow-500 px-8 pb-8 pt-4">
             <div className="flex justify-end">
-              <button className="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded">
+              <button className="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded my-4">
                 <NavLink to="/artifacts">View more</NavLink>
               </button>
             </div>
