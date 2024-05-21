@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { Typography } from "@mui/material";
 
 const CharacterList = ({ characters }) => {
   return (
@@ -19,7 +20,9 @@ const CharacterList = ({ characters }) => {
               character.rarity == 5 ? "bg-yellow-600" : "bg-purple-700"
             }`}
           />
-          <span className="mt-2">{character.name}</span>
+          <Typography variant="body1" mt={2}>
+            {character.name}
+          </Typography>
         </NavLink>
       ))}
     </div>
