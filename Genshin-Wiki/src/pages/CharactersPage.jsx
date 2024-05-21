@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useData } from "../context/DataContext";
 import CharacterList from "../components/CharacterList";
+import { Button, Typography, Box } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 
 const CharactersPage = () => {
   const { characters } = useData();
@@ -16,37 +18,71 @@ const CharactersPage = () => {
     .sort((a, b) => b.rarity - a.rarity)
     .slice(indexOfFirstCharacter, indexOfLastCharacter);
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const totalPages = Math.ceil(characters.length / charactersPerPage);
 
-  const renderPaginationButtons = () => {
-    const totalPages = Math.ceil(characters.length / charactersPerPage);
-    return Array.from({ length: totalPages }).map((_, index) => (
-      <button
-        key={index}
-        onClick={() => paginate(index + 1)}
-        className="mx-1 px-3 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none"
-      >
-        {index + 1}
-      </button>
-    ));
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
   };
-  //pagination
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const renderPaginationButtons = () => (
+    <Box display="flex" justifyContent="center" alignItems="center" mt={4}>
+      <Button
+        onClick={handlePrevPage}
+        variant="contained"
+        color="warning"
+        disabled={currentPage === 1}
+        sx={{ mx: 1 }}
+      >
+        &lt;&lt; Back
+      </Button>
+      <Typography variant="body1" sx={{ mx: 1 }}>
+        Page {currentPage} of {totalPages}
+      </Typography>
+      <Button
+        onClick={handleNextPage}
+        variant="contained"
+        color="warning"
+        disabled={currentPage === totalPages}
+        sx={{ mx: 1 }}
+      >
+        Next &gt;&gt;
+      </Button>
+    </Box>
+  );
 
   return (
-    <div className="flex justify-center">
-      <div className="bg-slate-100 w-9/12 bg-opacity-90 py-8 px-10 my-10 rounded-lg">
-        <span className="font-bold sm:text-xl md:text-3xl">Characters</span>
-        <div className="flex justify-end">
-          <button className="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 mr-8 rounded">
-            <NavLink to="add">Add Character</NavLink>
-          </button>
-        </div>
-        <div className="border border-yellow-500 px-8 pb-8 pt-4 m-8 rounded-md">
+    <Box display="flex" justifyContent="center">
+      <Box
+        sx={{
+          bgcolor: alpha("#f5f5f5", 0.9),
+          p: 8,
+          my: 10,
+          borderRadius: 4,
+          width: "75%",
+        }}
+      >
+        <Typography variant="h4" fontWeight="bold">
+          Characters
+        </Typography>
+        <Box display="flex" justifyContent="flex-end" mt={2}>
+          <Button variant="contained" color="primary" component={NavLink} to="add" sx={{ mr: 2 }}>
+            Add Character
+          </Button>
+        </Box>
+        <Box border={1} borderColor="gold" p={4} mt={4} borderRadius={4}>
           <CharacterList characters={currentCharacters} />
-          <div className="flex justify-center mt-4">{renderPaginationButtons()}</div>
-        </div>
-      </div>
-    </div>
+          {renderPaginationButtons()}
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
