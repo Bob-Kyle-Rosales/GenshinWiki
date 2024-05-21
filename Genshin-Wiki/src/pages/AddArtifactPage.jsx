@@ -26,11 +26,13 @@ const AddArtifactPage = () => {
   const onSubmit = async (data) => {
     try {
       await createArtifactMutation.mutateAsync(data);
-      navigate("/artifacts");
       Swal.fire({
-        icon: "success",
-        title: "Success!",
+        title: "Success",
         text: "Artifact creation was successful.",
+        icon: "success",
+        confirmButtonText: "OK",
+      }).then(() => {
+        navigate("/artifacts");
       });
     } catch (error) {
       console.error("Error:", error);

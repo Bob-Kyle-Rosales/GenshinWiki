@@ -15,6 +15,7 @@ import {
   alpha,
 } from "@mui/material";
 import { createCharacter } from "../services/CharactersService";
+import Swal from "sweetalert2";
 
 const AddCharacterPage = () => {
   const navigate = useNavigate();
@@ -35,7 +36,14 @@ const AddCharacterPage = () => {
   const onSubmit = async (data) => {
     try {
       await createCharacterMutation.mutateAsync(data);
-      navigate("/characters");
+      Swal.fire({
+        title: "Success",
+        text: "Character creation was successful.",
+        icon: "success",
+        confirmButtonText: "OK",
+      }).then(() => {
+        navigate("/characters");
+      });
     } catch (error) {
       console.error("Error:", error);
     }
