@@ -1,170 +1,214 @@
-import React, { useState } from "react";
+import React from "react";
+import { useForm, Controller } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
-import apiConfig from "../config";
+import { TextField, Button, Typography, Box, MenuItem, alpha } from "@mui/material";
+import Swal from "sweetalert2";
+import { createWeapon } from "../services/WeaponService";
 
 const AddWeaponPage = () => {
   const navigate = useNavigate();
-  const [weaponInfo, setWeaponInfo] = useState({
-    name: "",
-    rarity: "",
-    type: "",
-    atk: "",
-    obtain: "",
-    image_url: "",
+  const queryClient = useQueryClient();
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm();
+
+  const createWeaponMutation = useMutation({
+    mutationFn: createWeapon,
+    onSuccess: () => {
+      queryClient.invalidateQueries("weapons");
+    },
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setWeaponInfo({
-      ...weaponInfo,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     try {
-      const response = await fetch(`${apiConfig.API_URL}/weapons`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(weaponInfo),
+      await createWeaponMutation.mutateAsync(data);
+      Swal.fire({
+        title: "Success",
+        text: "Weapon created successfully!",
+        icon: "success",
+        confirmButtonText: "OK",
+      }).then(() => {
+        navigate("/weapons");
       });
-      if (!response.ok) {
-        throw new Error("Failed to save weapon");
-      }
-      setWeaponInfo({
-        name: "",
-        rarity: "",
-        type: "",
-        atk: "",
-        obtain: "",
-        image_url: "",
-      });
-      navigate("/weapons");
     } catch (error) {
       console.error("Error:", error);
     }
   };
 
   return (
-    <div className="flex justify-center">
-      <div className="bg-slate-100 w-9/12 bg-opacity-90 py-8 px-10 my-10 rounded-lg">
-        <Link to="/weapons">
+    <Box display="flex" justifyContent="center">
+      <Box
+        sx={{
+          bgcolor: alpha("#f5f5f5", 0.9),
+          p: 8,
+          my: 10,
+          borderRadius: 4,
+          width: "75%",
+        }}
+      >
+        <Link to="/weapons" style={{ textDecoration: "none", color: "#000" }}>
           <FaArrowLeft />
         </Link>
-        <span className="font-bold m-8 sm:text-xl md:text-3xl">Add Weapon</span>
-        <div className="border border-yellow-500 px-8 pb-8 pt-4 m-8 rounded-md">
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label htmlFor="name" className="block font-semibold mb-2">
-                Name:
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={weaponInfo.name}
-                onChange={handleChange}
-                className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                required
-              />
-            </div>
-            <div className="flex gap-8 items-center justify-center">
-              <div className="mb-4">
-                <label htmlFor="rarity" className="block font-semibold mb-2">
-                  Rarity:
-                </label>
-                <select
-                  id="rarity"
-                  name="rarity"
-                  value={weaponInfo.rarity}
-                  onChange={handleChange}
-                  className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                  required
-                >
-                  <option value="">Select Rarity</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
-                </select>
-              </div>
-              <div className="mb-4">
-                <label htmlFor="type" className="block font-semibold mb-2">
-                  Type:
-                </label>
-                <select
-                  id="type"
-                  name="type"
-                  value={weaponInfo.type}
-                  onChange={handleChange}
-                  className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                  required
-                >
-                  <option value="">Select type</option>
-                  <option value="bows">Bows</option>
-                  <option value="polearms">Polearms</option>
-                  <option value="sword">Sword</option>
-                  <option value="claymore">Claymore</option>
-                  <option value="catalyst">Catalyst</option>
-                </select>
-              </div>
-              <div className="mb-4">
-                <label htmlFor="atk" className="block font-semibold mb-2">
-                  Attack Dmg:
-                </label>
-                <input
-                  type="text"
-                  id="atk"
-                  name="atk"
-                  value={weaponInfo.atk}
-                  onChange={handleChange}
-                  className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                  required
+        <Box p={4}>
+          <Typography variant="h5" fontWeight="bold" mt={2} mb={4}>
+            Add Weapon
+          </Typography>
+          <Box
+            border="1px solid #FBBF24"
+            borderRadius={8}
+            sx={{
+              "@media (min-width: 960px)": {
+                pt: 8,
+                pb: 4,
+                px: 10,
+              },
+              "@media (max-width: 960px)": {
+                pt: 4,
+                pb: 2,
+                px: 5,
+              },
+            }}
+          >
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <Box mb={2}>
+                <Controller
+                  name="name"
+                  control={control}
+                  defaultValue=""
+                  rules={{ required: "This field is required" }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Name"
+                      variant="outlined"
+                      fullWidth
+                      error={!!errors.name}
+                      helperText={errors.name?.message}
+                      sx={{ backgroundColor: "#f8f8f8" }}
+                    />
+                  )}
                 />
-              </div>
-            </div>
-            <div className="mb-4">
-              <label htmlFor="obtain" className="block font-semibold mb-2">
-                Obtain:
-              </label>
-              <input
-                type="text"
-                id="obtain"
-                name="obtain"
-                value={weaponInfo.obtain}
-                onChange={handleChange}
-                className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="image_url" className="block font-semibold mb-2">
-                Image URL:
-              </label>
-              <input
-                type="text"
-                id="image_url"
-                name="image_url"
-                value={weaponInfo.image_url}
-                onChange={handleChange}
-                className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                required
-              />
-            </div>
-            <div className="flex justify-center">
-              <button
-                type="submit"
-                className="bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Create
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+              </Box>
+              <Box mb={2}>
+                <Controller
+                  name="rarity"
+                  control={control}
+                  defaultValue=""
+                  rules={{ required: "This field is required" }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Rarity"
+                      variant="outlined"
+                      fullWidth
+                      select
+                      error={!!errors.rarity}
+                      helperText={errors.rarity?.message}
+                      sx={{ backgroundColor: "#f8f8f8" }}
+                    >
+                      <MenuItem value="4">4</MenuItem>
+                      <MenuItem value="5">5</MenuItem>
+                    </TextField>
+                  )}
+                />
+              </Box>
+              <Box mb={2}>
+                <Controller
+                  name="type"
+                  control={control}
+                  defaultValue=""
+                  rules={{ required: "This field is required" }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Type"
+                      variant="outlined"
+                      fullWidth
+                      select
+                      error={!!errors.type}
+                      helperText={errors.type?.message}
+                      sx={{ backgroundColor: "#f8f8f8" }}
+                    >
+                      <MenuItem value="bows">Bows</MenuItem>
+                      <MenuItem value="polearms">Polearms</MenuItem>
+                      <MenuItem value="sword">Sword</MenuItem>
+                      <MenuItem value="claymore">Claymore</MenuItem>
+                      <MenuItem value="catalyst">Catalyst</MenuItem>
+                    </TextField>
+                  )}
+                />
+              </Box>
+              <Box mb={2}>
+                <Controller
+                  name="atk"
+                  control={control}
+                  defaultValue=""
+                  rules={{ required: "This field is required" }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Attack Damage"
+                      variant="outlined"
+                      fullWidth
+                      error={!!errors.atk}
+                      helperText={errors.atk?.message}
+                      sx={{ backgroundColor: "#f8f8f8" }}
+                    />
+                  )}
+                />
+              </Box>
+              <Box mb={2}>
+                <Controller
+                  name="obtain"
+                  control={control}
+                  defaultValue=""
+                  rules={{ required: "This field is required" }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Obtain"
+                      variant="outlined"
+                      fullWidth
+                      error={!!errors.obtain}
+                      helperText={errors.obtain?.message}
+                      sx={{ backgroundColor: "#f8f8f8" }}
+                    />
+                  )}
+                />
+              </Box>
+              <Box mb={2}>
+                <Controller
+                  name="image_url"
+                  control={control}
+                  defaultValue=""
+                  rules={{ required: "This field is required" }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Image URL"
+                      variant="outlined"
+                      fullWidth
+                      error={!!errors.image_url}
+                      helperText={errors.image_url?.message}
+                      sx={{ backgroundColor: "#f8f8f8" }}
+                    />
+                  )}
+                />
+              </Box>
+              <Box display="flex" justifyContent="center">
+                <Button type="submit" variant="contained" color="primary" fontWeight="bold">
+                  Create
+                </Button>
+              </Box>
+            </form>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
