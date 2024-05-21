@@ -1,34 +1,64 @@
 import React from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+} from "@mui/material";
 
 const ArtifactList = ({ artifacts }) => {
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full bg-white">
-        <thead>
-          <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-            <th className="py-3 px-6 text-center">Name</th>
-            <th className="py-3 px-6 text-center">2_set_bonus</th>
-            <th className="py-3 px-6 text-center">4_set_bonus</th>
-          </tr>
-        </thead>
-        <tbody className="text-gray-600 text-sm font-light">
+    <TableContainer component={Paper}>
+      <Table>
+        <TableHead>
+          <TableRow sx={{ backgroundColor: "#E5E7EB" }}>
+            <TableCell align="center" sx={{ width: "20%" }}>
+              <Typography variant="body1" fontWeight="bold">
+                Name
+              </Typography>
+            </TableCell>
+            <TableCell align="center" sx={{ width: "40%" }}>
+              <Typography variant="body1" fontWeight="bold">
+                2_set_bonus
+              </Typography>
+            </TableCell>
+            <TableCell align="center" sx={{ width: "40%" }}>
+              <Typography variant="body1" fontWeight="bold">
+                4_set_bonus
+              </Typography>
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
           {artifacts.map((artifact) => (
-            <tr key={artifact.id} className="border-b border-gray-200 hover:bg-gray-100">
-              <td className="flex py-3 px-6 text-center items-center">
-                <img src={artifact.image_url} alt={artifact.name} className="h-20 w-auto" />
-                <span className="ml-2">{artifact.name}</span>
-              </td>
-              <td className="py-3 px-6 text-center">
-                <span className="ml-2">{artifact["2_set_bonus"]}</span>
-              </td>
-              <td className="py-3 px-6 text-center">
-                <span className="ml-2">{artifact["4_set_bonus"]}</span>
-              </td>
-            </tr>
+            <TableRow key={artifact.id} sx={{ "&:hover": { backgroundColor: "#F3F4F6" } }}>
+              <TableCell align="center">
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <img
+                    src={artifact.image_url}
+                    alt={artifact.name}
+                    style={{ height: 80, width: "auto" }}
+                  />
+                  <Typography variant="body1" ml={2}>
+                    {artifact.name}
+                  </Typography>
+                </div>
+              </TableCell>
+              <TableCell align="center">
+                <Typography variant="body1">{artifact["2_set_bonus"]}</Typography>
+              </TableCell>
+              <TableCell align="center">
+                <Typography variant="body1">{artifact["4_set_bonus"]}</Typography>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };
 

@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FaArrowLeft } from "react-icons/fa";
+import { Box, Typography, Button } from "@mui/material";
+import { getCharacter, deleteCharacter } from "../services/CharactersService";
 import Swal from "sweetalert2";
-import apiConfig from "../config";
+import Loading from "../components/Loading";
 
 const S_CharacterPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
   const [character, setCharacter] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCharacter = async () => {
       try {
-        const response = await fetch(`${apiConfig.API_URL}/characters/${id}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch character data");
-        }
-        const data = await response.json();
-        setCharacter(data);
+        const response = await getCharacter(id);
+
+        setCharacter(response);
       } catch (err) {
         navigate("/error");
       } finally {
@@ -27,7 +29,15 @@ const S_CharacterPage = () => {
     };
 
     fetchCharacter();
-  }, [id, navigate]);
+  }, [id]);
+
+  const deleteCharacterMutation = useMutation({
+    mutationFn: deleteCharacter,
+    onSuccess: () => {
+      queryClient.invalidateQueries("characters");
+      navigate("/characters");
+    },
+  });
 
   const handleDelete = async () => {
     const result = await Swal.fire({
@@ -41,44 +51,28 @@ const S_CharacterPage = () => {
     });
 
     if (result.isConfirmed) {
-      try {
-        const response = await fetch(`${apiConfig.API_URL}/characters/${id}`, {
-          method: "DELETE",
-        });
-        if (!response.ok) {
-          throw new Error("Failed to delete character");
-        }
-        navigate("/characters");
-      } catch (err) {
-        console.error("Error deleting character:", err);
-        Swal.fire("Error", "There was a problem deleting the character", "error");
-      }
+      deleteCharacterMutation.mutate(id); // Trigger the delete mutation
     }
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  return (
-    <div className="flex justify-center">
-      <div className="bg-slate-100 w-8/12 bg-opacity-90 py-8 px-10 my-10 rounded-lg">
-        <Link to="/characters">
-          <FaArrowLeft />
-        </Link>
-        <div className="flex justify-end">
-          <button
-            onClick={handleDelete}
-            className="mt-4 bg-red-800 text-white font-semibold py-2 px-4 rounded hover:bg-red-600"
-          >
+  const renderContent = () => {
+    return (
+      <>
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <Button onClick={handleDelete} variant="contained" color="error" sx={{ mt: 4, mb: 2 }}>
             Delete
-          </button>
-        </div>
+          </Button>
+        </Box>
+
         <div className="flex border border-yellow-500 px-8 pb-8 pt-4 m-8 rounded-md">
-          <div className="p-4 w-8/12">
-            <span className="block my-8 text-xl font-bold">About {character.name}</span>
-            <p className="text-16">{character.description}</p>
-          </div>
+          <Box sx={{ p: 4, width: "66.66%" }}>
+            <Typography variant="h5" fontWeight="bold" mt={8} mb={4}>
+              About {character.name}
+            </Typography>
+            <Typography variant="body1" mt={8}>
+              {character.description}
+            </Typography>
+          </Box>
 
           <div className="border border-slate-500 w-4/12 flex flex-col items-center py-8">
             <img
@@ -118,6 +112,18 @@ const S_CharacterPage = () => {
             </table>
           </div>
         </div>
+      </>
+    );
+  };
+
+  return (
+    <div className="flex justify-center">
+      <div className="bg-slate-100 w-8/12 bg-opacity-90 py-8 px-10 my-10 rounded-lg">
+        <Link to="/characters">
+          <FaArrowLeft />
+        </Link>
+
+        {loading ? <Loading /> : renderContent()}
       </div>
     </div>
   );

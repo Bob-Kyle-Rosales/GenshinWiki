@@ -1,128 +1,159 @@
-import React, { useState } from "react";
+import React from "react";
+import { useForm, Controller } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
-import apiConfig from "../config";
+import { TextField, Button, Typography, Box, alpha } from "@mui/material";
+import { createArtifact } from "../services/ArtifactService";
+import Swal from "sweetalert2";
 
 const AddArtifactPage = () => {
   const navigate = useNavigate();
-  const [artifactInfo, setArtifactInfo] = useState({
-    name: "",
-    "2_set_bonus": "",
-    "4_set_bonus": "",
-    image_url: "",
+  const queryClient = useQueryClient();
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm();
+
+  const createArtifactMutation = useMutation({
+    mutationFn: createArtifact,
+    onSuccess: () => {
+      queryClient.invalidateQueries("artifacts");
+    },
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setArtifactInfo({
-      ...artifactInfo,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     try {
-      const response = await fetch(`${apiConfig.API_URL}/artifacts`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(artifactInfo),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to save artifact");
-      }
-      setArtifactInfo({
-        name: "",
-        slug: "",
-        "2_set_bonus": "",
-        "4_set_bonus": "",
-        image_url: "",
-      });
+      await createArtifactMutation.mutateAsync(data);
       navigate("/artifacts");
+      Swal.fire({
+        icon: "success",
+        title: "Success!",
+        text: "Artifact creation was successful.",
+      });
     } catch (error) {
       console.error("Error:", error);
     }
   };
 
   return (
-    <div className="flex justify-center">
-      <div className="bg-slate-100 w-9/12 bg-opacity-90 py-8 px-10 my-10 rounded-lg">
-        <Link to="/artifacts">
+    <Box display="flex" justifyContent="center">
+      <Box
+        sx={{
+          bgcolor: alpha("#f5f5f5", 0.9),
+          p: 8,
+          my: 10,
+          borderRadius: 4,
+          width: "75%",
+        }}
+      >
+        <Link to="/artifacts" style={{ textDecoration: "none", color: "#000" }}>
           <FaArrowLeft />
         </Link>
-        <span className="font-bold m-8 sm:text-xl md:text-3xl">Add Artifact</span>
-        <div className="border border-yellow-500 px-8 pb-8 pt-4 m-8 rounded-md">
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label htmlFor="name" className="block font-semibold mb-2">
-                Name:
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={artifactInfo.name}
-                onChange={handleChange}
-                className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="2_set_bonus" className="block font-semibold mb-2">
-                2-Set Bonus:
-              </label>
-              <input
-                type="text"
-                id="2_set_bonus"
-                name="2_set_bonus"
-                value={artifactInfo["2_set_bonus"]}
-                onChange={handleChange}
-                className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="4_set_bonus" className="block font-semibold mb-2">
-                4-Set Bonus:
-              </label>
-              <input
-                type="text"
-                id="4_set_bonus"
-                name="4_set_bonus"
-                value={artifactInfo["4_set_bonus"]}
-                onChange={handleChange}
-                className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="image_url" className="block font-semibold mb-2">
-                Image URL:
-              </label>
-              <input
-                type="text"
-                id="image_url"
-                name="image_url"
-                value={artifactInfo.image_url}
-                onChange={handleChange}
-                className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                required
-              />
-            </div>
-            <div className="flex justify-center">
-              <button
-                type="submit"
-                className="bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Create
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+        <Box p={4}>
+          <Typography variant="h5" fontWeight="bold" mt={2} mb={4}>
+            Add Artifact
+          </Typography>
+          <Box
+            border="1px solid #FBBF24"
+            borderRadius={8}
+            sx={{
+              "@media (min-width: 960px)": {
+                pt: 8,
+                pb: 4,
+                px: 10,
+              },
+              "@media (max-width: 960px)": {
+                pt: 4,
+                pb: 2,
+                px: 5,
+              },
+            }}
+          >
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <Box mb={2}>
+                <Controller
+                  name="name"
+                  control={control}
+                  defaultValue=""
+                  rules={{ required: "This field is required" }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Name"
+                      variant="outlined"
+                      fullWidth
+                      error={!!errors.name}
+                      helperText={errors.name ? errors.name.message : ""}
+                    />
+                  )}
+                />
+              </Box>
+              <Box mb={2}>
+                <Controller
+                  name="2_set_bonus"
+                  control={control}
+                  defaultValue=""
+                  rules={{ required: "This field is required" }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="2-Set Bonus"
+                      variant="outlined"
+                      fullWidth
+                      error={!!errors["2_set_bonus"]}
+                      helperText={errors["2_set_bonus"] ? errors["2_set_bonus"].message : ""}
+                    />
+                  )}
+                />
+              </Box>
+              <Box mb={2}>
+                <Controller
+                  name="4_set_bonus"
+                  control={control}
+                  defaultValue=""
+                  rules={{ required: "This field is required" }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="4-Set Bonus"
+                      variant="outlined"
+                      fullWidth
+                      error={!!errors["4_set_bonus"]}
+                      helperText={errors["4_set_bonus"] ? errors["4_set_bonus"].message : ""}
+                    />
+                  )}
+                />
+              </Box>
+              <Box mb={2}>
+                <Controller
+                  name="image_url"
+                  control={control}
+                  defaultValue=""
+                  rules={{ required: "This field is required" }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Image URL"
+                      variant="outlined"
+                      fullWidth
+                      error={!!errors.image_url}
+                      helperText={errors.image_url ? errors.image_url.message : ""}
+                    />
+                  )}
+                />
+              </Box>
+              <Box display="flex" justifyContent="center">
+                <Button type="submit" variant="contained" color="primary" fontWeight="bold">
+                  Create
+                </Button>
+              </Box>
+            </form>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

@@ -1,52 +1,40 @@
-import React, { useState } from "react";
+import React from "react";
+import { useForm, Controller } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
-import apiConfig from "../config";
+import {
+  TextField,
+  Button,
+  Typography,
+  Box,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  alpha,
+} from "@mui/material";
+import { createCharacter } from "../services/CharactersService";
 
 const AddCharacterPage = () => {
   const navigate = useNavigate();
-  const [characterInfo, setCharacterInfo] = useState({
-    name: "",
-    description: "",
-    rarity: "",
-    vision: "",
-    weapon: "",
-    obtain: "",
-    birthday: "",
-    image_url: "",
+  const queryClient = useQueryClient();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+
+  const createCharacterMutation = useMutation({
+    mutationFn: createCharacter,
+    onSuccess: () => {
+      queryClient.invalidateQueries("characters");
+    },
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setCharacterInfo({
-      ...characterInfo,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     try {
-      const response = await fetch(`${apiConfig.API_URL}/characters`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(characterInfo),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to save character");
-      }
-      setCharacterInfo({
-        name: "",
-        description: "",
-        rarity: "",
-        vision: "",
-        weapon: "",
-        obtain: "",
-        birthday: "",
-        image_url: "",
-      });
+      await createCharacterMutation.mutateAsync(data);
       navigate("/characters");
     } catch (error) {
       console.error("Error:", error);
@@ -54,175 +42,223 @@ const AddCharacterPage = () => {
   };
 
   return (
-    <div className="flex justify-center">
-      <div className="bg-slate-100 w-9/12 bg-opacity-90 py-8 px-10 my-10 rounded-lg">
-        <Link to="/characters">
+    <Box display="flex" justifyContent="center">
+      <Box
+        sx={{
+          bgcolor: alpha("#f5f5f5", 0.9),
+          p: 8,
+          my: 10,
+          borderRadius: 4,
+          width: "75%",
+        }}
+      >
+        <Link to="/characters" style={{ textDecoration: "none", color: "#000" }}>
           <FaArrowLeft />
         </Link>
-        <span className="font-bold m-8 sm:text-xl md:text-3xl ">Add Character</span>
-        <div className="border border-yellow-500 px-8 pb-8 pt-4 m-8 rounded-md">
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label htmlFor="name" className="block font-semibold mb-2">
-                Name:
-              </label>
-              <input
-                type="text"
-                id="name"
+
+        <Box p={4}>
+          <Typography variant="h5" fontWeight="bold" mt={2} mb={4}>
+            Add Character
+          </Typography>
+
+          <Box border="1px solid #FBBF24" borderRadius={8} p={4} mb={4}>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <Controller
                 name="name"
-                value={characterInfo.name}
-                onChange={handleChange}
-                className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                required
+                control={control}
+                defaultValue=""
+                rules={{ required: "This field is required" }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Name"
+                    variant="outlined"
+                    fullWidth
+                    error={!!errors.name}
+                    helperText={errors.name ? errors.name.message : ""}
+                    sx={{ backgroundColor: "#f8f8f8", mb: 2 }}
+                  />
+                )}
               />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="description" className="block font-semibold mb-2">
-                Description:
-              </label>
-              <textarea
-                id="description"
+
+              <Controller
                 name="description"
-                value={characterInfo.description}
-                onChange={handleChange}
-                className="border border-gray-400 rounded-md py-2 px-3 w-full h-24"
-                required
+                control={control}
+                defaultValue=""
+                rules={{ required: "This field is required" }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Description"
+                    variant="outlined"
+                    fullWidth
+                    multiline
+                    rows={4}
+                    error={!!errors.description}
+                    helperText={errors.description ? errors.description.message : ""}
+                    sx={{ backgroundColor: "#f8f8f8", mb: 2 }}
+                  />
+                )}
               />
-            </div>
 
-            <div className="flex gap-8 items-center justify-center">
-              <div className="mb-4">
-                <label htmlFor="gender" className="block font-semibold mb-2">
-                  Gender:
-                </label>
-                <select
-                  id="gender"
+              <FormControl fullWidth required sx={{ backgroundColor: "#f8f8f8", mb: 2 }}>
+                <InputLabel id="gender-label">Gender</InputLabel>
+                <Controller
                   name="gender"
-                  value={characterInfo.gender}
-                  onChange={handleChange}
-                  className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                  required
-                >
-                  <option value="">Select Gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                </select>
-              </div>
-              <div className="mb-4">
-                <label htmlFor="birthday" className="block font-semibold mb-2">
-                  Birthday:
-                </label>
-                <input
-                  type="text"
-                  id="birthday"
-                  name="birthday"
-                  value={characterInfo.birthday}
-                  onChange={handleChange}
-                  className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                  required
+                  control={control}
+                  defaultValue=""
+                  rules={{ required: "This field is required" }}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      labelId="gender-label"
+                      label="Gender"
+                      error={!!errors.gender}
+                    >
+                      <MenuItem value="">
+                        <em>Select Gender</em>
+                      </MenuItem>
+                      <MenuItem value="male">Male</MenuItem>
+                      <MenuItem value="female">Female</MenuItem>
+                    </Select>
+                  )}
                 />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="rarity" className="block font-semibold mb-2">
-                  Rarity:
-                </label>
-                <select
-                  id="rarity"
+              </FormControl>
+              <Controller
+                name="birthday"
+                control={control}
+                defaultValue=""
+                rules={{ required: "This field is required" }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Birthday"
+                    variant="outlined"
+                    fullWidth
+                    error={!!errors.birthday}
+                    helperText={errors.birthday ? errors.birthday.message : ""}
+                    sx={{ backgroundColor: "#f8f8f8", mb: 2 }}
+                  />
+                )}
+              />
+              <FormControl fullWidth required sx={{ backgroundColor: "#f8f8f8", mb: 2 }}>
+                <InputLabel id="rarity-label">Rarity</InputLabel>
+                <Controller
                   name="rarity"
-                  value={characterInfo.rarity}
-                  onChange={handleChange}
-                  className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                  required
-                >
-                  <option value="">Select Rarity</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
-                </select>
-              </div>
-              <div className="mb-4">
-                <label htmlFor="vision" className="block font-semibold mb-2">
-                  Vision:
-                </label>
-                <select
-                  id="vision"
+                  control={control}
+                  defaultValue=""
+                  rules={{ required: "This field is required" }}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      labelId="rarity-label"
+                      label="Rarity"
+                      error={!!errors.rarity}
+                    >
+                      <MenuItem value="4">4</MenuItem>
+                      <MenuItem value="5">5</MenuItem>
+                    </Select>
+                  )}
+                />
+              </FormControl>
+              <FormControl fullWidth required sx={{ backgroundColor: "#f8f8f8", mb: 2 }}>
+                <InputLabel id="vision-label">Vision</InputLabel>
+                <Controller
                   name="vision"
-                  value={characterInfo.vision}
-                  onChange={handleChange}
-                  className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                  required
-                >
-                  <option value="">Select vision</option>
-                  <option value="geo">Geo</option>
-                  <option value="pyro">Pyro</option>
-                  <option value="anemo">Anemo</option>
-                  <option value="cryo">Cryo</option>
-                  <option value="hydro">Hydro</option>
-                  <option value="electro">Electro</option>
-                  <option value="dendro">Dendro</option>
-                </select>
-              </div>
-              <div className="mb-4">
-                <label htmlFor="weapon" className="block font-semibold mb-2">
-                  Weapon:
-                </label>
-                <select
-                  id="weapon"
+                  control={control}
+                  defaultValue=""
+                  rules={{ required: "This field is required" }}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      labelId="vision-label"
+                      label="Vision"
+                      error={!!errors.vision}
+                    >
+                      <MenuItem value="geo">Geo</MenuItem>
+                      <MenuItem value="pyro">Pyro</MenuItem>
+                      <MenuItem value="anemo">Anemo</MenuItem>
+                      <MenuItem value="cryo">Cryo</MenuItem>
+                      <MenuItem value="hydro">Hydro</MenuItem>
+                      <MenuItem value="electro">Electro</MenuItem>
+                      <MenuItem value="dendro">Dendro</MenuItem>
+                    </Select>
+                  )}
+                />
+              </FormControl>
+              <FormControl fullWidth required sx={{ backgroundColor: "#f8f8f8", mb: 2 }}>
+                <InputLabel id="weapon-label">Weapon</InputLabel>
+                <Controller
                   name="weapon"
-                  value={characterInfo.weapon}
-                  onChange={handleChange}
-                  className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                  required
-                >
-                  <option value="">Select weapon</option>
-                  <option value="bows">Bows</option>
-                  <option value="polearms">Polearms</option>
-                  <option value="sword">Sword</option>
-                  <option value="claymore">Claymore</option>
-                  <option value="catalyst">Catalyst</option>
-                </select>
-              </div>
-            </div>
-            <div className="mb-4">
-              <label htmlFor="obtain" className="block font-semibold mb-2">
-                Obtain:
-              </label>
-              <input
-                type="text"
-                id="obtain"
-                name="obtain"
-                value={characterInfo.obtain}
-                onChange={handleChange}
-                className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="image_url" className="block font-semibold mb-2">
-                Image URL:
-              </label>
-              <input
-                type="text"
-                id="image_url"
-                name="image_url"
-                value={characterInfo.image_url}
-                onChange={handleChange}
-                className="border border-gray-400 rounded-md py-2 px-3 w-full"
-                required
-              />
-            </div>
+                  control={control}
+                  defaultValue=""
+                  rules={{ required: "This field is required" }}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      labelId="weapon-label"
+                      label="Weapon"
+                      error={!!errors.weapon}
+                    >
+                      <MenuItem value="">
+                        <em>Select Weapon</em>
+                      </MenuItem>
+                      <MenuItem value="bows">Bows</MenuItem>
+                      <MenuItem value="polearms">Polearms</MenuItem>
+                      <MenuItem value="sword">Sword</MenuItem>
+                      <MenuItem value="claymore">Claymore</MenuItem>
+                      <MenuItem value="catalyst">Catalyst</MenuItem>
+                    </Select>
+                  )}
+                />
+              </FormControl>
 
-            <div className="flex justify-center">
-              <button
-                type="submit"
-                className="bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Create
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+              <Controller
+                name="obtain"
+                control={control}
+                defaultValue=""
+                rules={{ required: "This field is required" }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Obtain"
+                    variant="outlined"
+                    fullWidth
+                    error={!!errors.obtain}
+                    helperText={errors.obtain ? errors.obtain.message : ""}
+                    sx={{ backgroundColor: "#f8f8f8", mb: 2 }}
+                  />
+                )}
+              />
+
+              <Controller
+                name="image_url"
+                control={control}
+                defaultValue=""
+                rules={{ required: "This field is required" }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Image URL"
+                    variant="outlined"
+                    fullWidth
+                    error={!!errors.image_url}
+                    helperText={errors.image_url ? errors.image_url.message : ""}
+                    sx={{ backgroundColor: "#f8f8f8", mb: 2 }}
+                  />
+                )}
+              />
+
+              <Box display="flex" justifyContent="center">
+                <Button type="submit" variant="contained" color="primary" fontWeight="bold">
+                  Create
+                </Button>
+              </Box>
+            </form>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
